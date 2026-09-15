@@ -227,7 +227,7 @@ For pre-compiled historical Bitcoin datasets, see:
 
 - **X (Twitter)**: [@varshithkarkera](https://x.com/varshithkarkera)
 - **Portfolio**: [varshith.me](https://varshith.me)
-- **Buy Me a Coffee**: [buymecoffee.com/varshithkarkera](https://buymecoffee.com/varshithkarkera)
+- **Buy Me a Coffee**: [buymeacoffee.com/varshithkarkera](https://buymeacoffee.com/varshithkarkera)
 
 ---
 
