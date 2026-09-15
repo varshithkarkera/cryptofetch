@@ -148,6 +148,7 @@ Follow the interactive prompts:
 [*] Fetching SOLUSDT 1m from 2020-09-01 to 2026-01-03
 SOLUSDT 1m |████████████████████| 100.0%
 [+] Saved 2,828,160 candles to sol/solusdt_1m.csv
+[+] Saved 2,828,160 candles to sol/solusdt_1min_fetched_20260103_120000.csv
 ```
 
 ---

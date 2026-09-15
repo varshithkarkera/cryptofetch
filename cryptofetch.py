@@ -9,6 +9,7 @@ import requests
 import csv
 import os
 from datetime import datetime
+from datetime import datetime, timezone
 from tqdm import tqdm
 
 BASE = "https://data-api.binance.vision/api/v3/klines"
@@ -266,10 +267,12 @@ def interactive_mode():
     # Download
     print(f"\n{Colors.GREEN}[+] Starting download...{Colors.RESET}\n")
     total_candles = 0
+    fetched_at = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     
     for interval in selected_intervals:
         filename_interval = INTERVAL_FILENAMES[interval]
         filename = f"{output_dir}/{symbol.lower()}_{filename_interval}.csv"
+        filename = f"{output_dir}/{symbol.lower()}_{filename_interval}_fetched_{fetched_at}.csv"
         candles = fetch_klines(symbol, interval, start_date, end_date, filename)
         total_candles += candles
     

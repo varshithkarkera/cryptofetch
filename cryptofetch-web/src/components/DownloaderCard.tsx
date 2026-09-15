@@ -194,6 +194,9 @@ export default function DownloaderCard() {
       const shouldZip = activeSymbols.length > 1 || selectedIntervals.length > 1
       const zip = shouldZip ? new JSZip() : null
 
+      const now = new Date()
+      const fetchedAt = `${now.getUTCFullYear()}${String(now.getUTCMonth() + 1).padStart(2, '0')}${String(now.getUTCDate()).padStart(2, '0')}_${String(now.getUTCHours()).padStart(2, '0')}${String(now.getUTCMinutes()).padStart(2, '0')}${String(now.getUTCSeconds()).padStart(2, '0')}`
+
       for (let sIdx = 0; sIdx < activeSymbols.length; sIdx++) {
         const sym = activeSymbols[sIdx]
 
@@ -229,7 +232,7 @@ export default function DownloaderCard() {
           const csvHeader = "open_time_ms,open,high,low,close,volume,close_time_ms,quote_asset_volume,number_of_trades,taker_buy_base_asset_volume,taker_buy_quote_asset_volume,ignore\n"
           const csvRows = rows.map((r) => r.slice(0, 12).join(",")).join("\n")
           const csvText = csvHeader + csvRows
-          const filename = `${sym.toLowerCase()}_${interval}_${startDate}_${endDate}.csv`
+          const filename = `${sym.toLowerCase()}_${interval}_${startDate}_${endDate}_fetched_${fetchedAt}.csv`
 
           if (shouldZip && zip) {
             zip.file(filename, csvText)
@@ -251,6 +254,7 @@ export default function DownloaderCard() {
         const a = document.createElement("a")
         a.href = URL.createObjectURL(zipBlob)
         a.download = `cryptofetch_datasets_${startDate}_${endDate}.zip`
+        a.download = `cryptofetch_datasets_${startDate}_${endDate}_fetched_${fetchedAt}.zip`
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
