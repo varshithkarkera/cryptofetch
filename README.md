@@ -16,15 +16,6 @@
 
 ---
 
-## Two Ways to Use
-
-| Interface | Path | Stack | Deployment / Run |
-|-----------|------|-------|------------------|
-| **Web Application** | `cryptofetch-web/` | Next.js 15, React, Tailwind CSS, Framer Motion | [cryptofetch.vercel.app](https://cryptofetch.vercel.app) |
-| **Terminal CLI** | `cryptofetch.py` | Python 3, requests, tqdm | Local terminal / command line |
-
----
-
 ## 1. Web Application (`cryptofetch-web`)
 
 > **Live Web App**: [cryptofetch.vercel.app](https://cryptofetch.vercel.app)
