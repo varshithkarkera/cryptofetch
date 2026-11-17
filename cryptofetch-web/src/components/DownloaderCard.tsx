@@ -14,8 +14,9 @@ import {
 } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import JSZip from 'jszip'
+import { EXCHANGES, getExchange, parsePair, toCsv, type ExchangeId } from '@/lib/exchanges'
 
-const ALL_INTERVALS = [
+const INTERVAL_OPTIONS = [
   { id: "1m", label: "1m" },
   { id: "3m", label: "3m" },
   { id: "5m", label: "5m" },
@@ -33,9 +34,20 @@ const ALL_INTERVALS = [
   { id: "1M", label: "1M" },
 ]
 
-const POPULAR_COINS = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT", "DOGEUSDT", "PEPEUSDT", "SUIUSDT"]
+const POPULAR_COINS = ["BTC", "ETH", "SOL", "BNB", "XRP", "DOGE", "PEPE", "SUI"]
 
 export default function DownloaderCard() {
+  // Data source (exchange)
+  const [exchangeId, setExchangeId] = useState<ExchangeId>("binance")
+  const ex = getExchange(exchangeId)
+  const pairOf = (text: string) => parsePair(text, ex.defaultQuote)
+  const symbolOf = (base: string, quote: string = ex.defaultQuote) => ex.toSymbol(base, quote)
+  // Coin text is kept in the selected exchange's own style (BTCUSDT, BTC-USDT, BTC_USDT...)
+  const isDefaultCoin = (text: string, coin: string) => {
+    const p = pairOf(text)
+    return !!p && p.base === coin && p.quote === ex.defaultQuote
+  }
+
   // Mode toggle: Single Crypto vs Multiple Cryptos
   const [isMultiMode, setIsMultiMode] = useState(false)
 
@@ -76,17 +88,9 @@ export default function DownloaderCard() {
     const timer = setTimeout(async () => {
       setSingleVerifying(true)
       try {
-        const res = await fetch(`https://data-api.binance.vision/api/v3/ticker/24hr?symbol=${singleSymbol.toUpperCase().trim()}`)
-        if (res.ok) {
-          const data = await res.json()
-          setSingleVerified({
-            valid: true,
-            price: Number(data.lastPrice).toLocaleString(),
-            change: Number(data.priceChangePercent).toFixed(2),
-          })
-        } else {
-          setSingleVerified({ valid: false })
-        }
+        const p = pairOf(singleSymbol)
+        const t = p ? await ex.ticker(p.base, p.quote) : null
+        setSingleVerified(t ? { valid: true, price: t.price, change: t.change } : { valid: false })
       } catch {
         setSingleVerified({ valid: false })
       } finally {
@@ -95,36 +99,26 @@ export default function DownloaderCard() {
     }, 400)
 
     return () => clearTimeout(timer)
-  }, [singleSymbol])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [singleSymbol, exchangeId])
 
   // Fetch prices helper
   const fetchPrice = async (sym: string) => {
     try {
-      const res = await fetch(`https://data-api.binance.vision/api/v3/ticker/24hr?symbol=${sym}`)
-      if (res.ok) {
-        const data = await res.json()
-        setVerifiedCoins((prev) => ({
-          ...prev,
-          [sym]: {
-            valid: true,
-            price: Number(data.lastPrice).toLocaleString(),
-            change: Number(data.priceChangePercent).toFixed(2)
-          }
-        }))
-        return true
-      }
-      return false
+      const p = pairOf(sym)
+      const t = p ? await ex.ticker(p.base, p.quote) : null
+      if (!t) return false
+      setVerifiedCoins((prev) => ({ ...prev, [sym]: { valid: true, price: t.price, change: t.change } }))
+      return true
     } catch {
       return false
     }
   }
 
   const addMultiSymbol = async (rawSym: string) => {
-    let clean = rawSym.trim().toUpperCase()
-    if (!clean) return
-    if (!clean.endsWith("USDT")) {
-      clean = `${clean}USDT`
-    }
+    const parsed = pairOf(rawSym)
+    if (!parsed) return
+    const clean = symbolOf(parsed.base, parsed.quote)
     if (symbols.includes(clean)) {
       setInputVal("")
       return
@@ -138,13 +132,31 @@ export default function DownloaderCard() {
       setSymbols([...symbols, clean])
       setInputVal("")
     } else {
-      alert(`Invalid symbol "${clean}". Please enter a valid Binance USDT trading pair.`)
+      alert(`Invalid symbol "${clean}". Please enter a valid ${ex.name} trading pair.`)
     }
   }
 
   const removeMultiSymbol = (symToRemove: string) => {
     if (symbols.length <= 1) return
     setSymbols(symbols.filter((s) => s !== symToRemove))
+  }
+
+  const switchExchange = (id: ExchangeId) => {
+    if (id === exchangeId) return
+    const next = getExchange(id)
+    const remap = (text: string) => {
+      const p = parsePair(text, ex.defaultQuote)
+      if (!p) return text
+      const q = p.quote === "USDT" || p.quote === "USD" ? next.defaultQuote : p.quote
+      return next.toSymbol(p.base, q)
+    }
+    setExchangeId(id)
+    setSingleSymbol(remap(singleSymbol))
+    setSymbols(symbols.map(remap))
+    setVerifiedCoins({})
+    setSingleVerified(null)
+    const kept = selectedIntervals.filter((i) => next.intervals.includes(i))
+    setSelectedIntervals(kept.length ? kept : ["1h"])
   }
 
   const toggleInterval = (id: string) => {
@@ -158,10 +170,10 @@ export default function DownloaderCard() {
   }
 
   const selectAllIntervals = () => {
-    if (selectedIntervals.length === ALL_INTERVALS.length) {
+    if (selectedIntervals.length === ex.intervals.length) {
       setSelectedIntervals(["1h"])
     } else {
-      setSelectedIntervals(ALL_INTERVALS.map((i) => i.id))
+      setSelectedIntervals([...ex.intervals])
     }
   }
 
@@ -173,7 +185,7 @@ export default function DownloaderCard() {
   }
 
   const handleDownload = async () => {
-    const activeSymbols = isMultiMode ? symbols : [singleSymbol.toUpperCase().trim()]
+    const activeSymbols = isMultiMode ? symbols : [singleSymbol.toUpperCase().trim()].filter(Boolean)
     if (activeSymbols.length === 0) return
     if (!startDate || !endDate) return
     if (new Date(startDate) >= new Date(endDate)) {
@@ -183,56 +195,51 @@ export default function DownloaderCard() {
 
     setDownloading(true)
     setDownloadProgress(2)
-    setStatusMessage("Connecting to Binance Vision stream...")
+    setStatusMessage(`Connecting to ${ex.name}...`)
 
     try {
       const startTs = new Date(startDate).getTime()
       const endTs = new Date(endDate).getTime()
       const totalOperations = activeSymbols.length * selectedIntervals.length
       let currentOp = 0
+      const warnings: string[] = []
 
       const shouldZip = activeSymbols.length > 1 || selectedIntervals.length > 1
       const zip = shouldZip ? new JSZip() : null
 
       const now = new Date()
       const fetchedAt = `${now.getUTCFullYear()}${String(now.getUTCMonth() + 1).padStart(2, '0')}${String(now.getUTCDate()).padStart(2, '0')}_${String(now.getUTCHours()).padStart(2, '0')}${String(now.getUTCMinutes()).padStart(2, '0')}${String(now.getUTCSeconds()).padStart(2, '0')}`
+      // Binance files keep their original names; other exchanges are prefixed so files never mix up
+      const prefix = ex.id === "binance" ? "" : `${ex.id}_`
 
       for (let sIdx = 0; sIdx < activeSymbols.length; sIdx++) {
         const sym = activeSymbols[sIdx]
+        const pair = pairOf(sym)
+        if (!pair) throw new Error(`Invalid symbol "${sym}"`)
 
         for (let iIdx = 0; iIdx < selectedIntervals.length; iIdx++) {
           const interval = selectedIntervals[iIdx]
-          setStatusMessage(`Streaming ${sym} [${interval}]...`)
+          setStatusMessage(`Streaming ${sym} [${interval}] from ${ex.name}...`)
 
-          let currentStart = startTs
-          const rows: any[] = []
-
-          while (currentStart < endTs) {
-            const url = `https://data-api.binance.vision/api/v3/klines?symbol=${sym}&interval=${interval}&startTime=${currentStart}&endTime=${endTs}&limit=1000`
-            const res = await fetch(url)
-            if (!res.ok) break
-            const data = await res.json()
-            if (!data || data.length === 0) break
-
-            rows.push(...data)
-            const lastOpen = data[data.length - 1][0]
-            if (lastOpen >= endTs) break
-            currentStart = lastOpen + 1
-
-            const progress = Math.min(
-              95,
-              Math.round(((currentOp + (lastOpen - startTs) / (endTs - startTs)) / totalOperations) * 100)
-            )
-            setDownloadProgress(progress)
-            await new Promise((r) => setTimeout(r, 40))
+          const earliest = ex.earliestMs?.(interval)
+          if (earliest && startTs < earliest) {
+            warnings.push(`${ex.name} only has ${interval} candles from ${new Date(earliest).toISOString().split('T')[0]}`)
           }
+
+          const rows = await ex.candles(pair.base, pair.quote, interval, startTs, endTs, (fraction) => {
+            const f = Math.max(0, Math.min(1, fraction))
+            setDownloadProgress(Math.min(95, Math.round(((currentOp + f) / totalOperations) * 100)))
+          })
 
           currentOp++
 
-          const csvHeader = "open_time_ms,open,high,low,close,volume,close_time_ms,quote_asset_volume,number_of_trades,taker_buy_base_asset_volume,taker_buy_quote_asset_volume,ignore\n"
-          const csvRows = rows.map((r) => r.slice(0, 12).join(",")).join("\n")
-          const csvText = csvHeader + csvRows
-          const filename = `${sym.toLowerCase()}_${interval}_${startDate}_${endDate}_fetched_${fetchedAt}.csv`
+          if (rows.length === 0) {
+            warnings.push(`no ${interval} data for ${sym}`)
+            continue
+          }
+
+          const csvText = toCsv(rows)
+          const filename = `${prefix}${sym.toLowerCase()}_${interval}_${startDate}_${endDate}_fetched_${fetchedAt}.csv`
 
           if (shouldZip && zip) {
             zip.file(filename, csvText)
@@ -254,14 +261,14 @@ export default function DownloaderCard() {
         const a = document.createElement("a")
         a.href = URL.createObjectURL(zipBlob)
         a.download = `cryptofetch_datasets_${startDate}_${endDate}.zip`
-        a.download = `cryptofetch_datasets_${startDate}_${endDate}_fetched_${fetchedAt}.zip`
+        a.download = `cryptofetch_${prefix}datasets_${startDate}_${endDate}_fetched_${fetchedAt}.zip`
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
       }
 
       setDownloadProgress(100)
-      setStatusMessage("Download complete!")
+      setStatusMessage(warnings.length ? `Done. Note: ${warnings.join("; ")}` : "Download complete!")
       confetti({ particleCount: 90, spread: 60, origin: { y: 0.7 } })
     } catch (err: any) {
       setStatusMessage(`Error: ${err.message || "Failed to download data"}`)
@@ -269,7 +276,7 @@ export default function DownloaderCard() {
       setTimeout(() => {
         setDownloading(false)
         setDownloadProgress(0)
-      }, 3000)
+      }, 4500)
     }
   }
 
@@ -279,6 +286,30 @@ export default function DownloaderCard() {
   return (
     <div className="w-full max-w-2xl rounded-2xl bg-white/90 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-md p-6 sm:p-7 shadow-sm space-y-5">
       
+      {/* 0. Data source */}
+      <div className="space-y-2">
+        <label className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider block">Exchange</label>
+        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Exchange">
+          {EXCHANGES.map((e) => (
+            <button
+              key={e.id}
+              role="radio"
+              aria-checked={e.id === exchangeId}
+              disabled={downloading}
+              onClick={() => switchExchange(e.id)}
+              className={`text-xs sm:text-sm px-3.5 py-1.5 rounded-xl border font-semibold transition-all duration-150 cursor-pointer ${
+                e.id === exchangeId
+                  ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900 dark:border-white shadow-xs"
+                  : "bg-zinc-100/90 dark:bg-zinc-900/60 border-zinc-300/80 dark:border-zinc-800/80 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200/90 dark:hover:bg-zinc-800/70"
+              }`}
+            >
+              {e.name}
+            </button>
+          ))}
+        </div>
+        {ex.note && <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">{ex.note}</p>}
+      </div>
+
       {/* 1. Header with Mode Switch */}
       <div className="space-y-2.5">
         <div className="flex items-center justify-between">
@@ -309,7 +340,7 @@ export default function DownloaderCard() {
                 type="text"
                 value={singleSymbol}
                 onChange={(e) => setSingleSymbol(e.target.value.toUpperCase())}
-                placeholder="e.g. BTCUSDT, SOLUSDT, ETHUSDT"
+                placeholder={`e.g. ${symbolOf("BTC")}, ${symbolOf("SOL")}, ${symbolOf("ETH")}`}
                 className="w-full px-4 py-2.5 rounded-xl bg-zinc-50/80 dark:bg-zinc-950/80 border border-zinc-300 dark:border-zinc-800 text-black dark:text-white font-bold text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-600 transition-all uppercase placeholder:normal-case placeholder:text-zinc-400"
               />
               
@@ -351,14 +382,14 @@ export default function DownloaderCard() {
               {POPULAR_COINS.map((coin) => (
                 <button
                   key={coin}
-                  onClick={() => setSingleSymbol(coin)}
+                  onClick={() => setSingleSymbol(symbolOf(coin))}
                   className={`text-xs px-2.5 py-1 rounded-lg border transition-colors cursor-pointer ${
-                    singleSymbol === coin
+                    isDefaultCoin(singleSymbol, coin)
                       ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-transparent font-bold shadow-xs"
                       : "bg-zinc-100/90 dark:bg-zinc-800/60 border-zinc-300/80 dark:border-zinc-700/80 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 font-medium"
                   }`}
                 >
-                  {coin.replace("USDT", "")}
+                  {coin}
                 </button>
               ))}
             </div>
@@ -417,12 +448,12 @@ export default function DownloaderCard() {
             <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
               <span className="text-xs text-zinc-400 mr-1">Quick Add:</span>
               {POPULAR_COINS.map((coin) => {
-                const isAdded = symbols.includes(coin)
+                const isAdded = symbols.some((sx) => isDefaultCoin(sx, coin))
                 return (
                   <button
                     key={coin}
                     onClick={() => {
-                      if (isAdded) removeMultiSymbol(coin)
+                      if (isAdded) removeMultiSymbol(symbols.find((sx) => isDefaultCoin(sx, coin))!)
                       else addMultiSymbol(coin)
                     }}
                     className={`text-xs px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
@@ -431,7 +462,7 @@ export default function DownloaderCard() {
                         : "bg-zinc-100/80 dark:bg-zinc-800/60 border-zinc-200/80 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                     }`}
                   >
-                    {coin.replace("USDT", "")}
+                    {coin}
                   </button>
                 )
               })}
@@ -452,18 +483,21 @@ export default function DownloaderCard() {
             onClick={selectAllIntervals}
             className="text-xs text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer font-medium"
           >
-            {selectedIntervals.length === ALL_INTERVALS.length ? "Reset to 1h" : "Select All"}
+            {selectedIntervals.length === ex.intervals.length ? "Reset to 1h" : "Select All"}
           </button>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {ALL_INTERVALS.map((intv) => {
+          {INTERVAL_OPTIONS.map((intv) => {
             const isSelected = selectedIntervals.includes(intv.id)
+            const supported = ex.intervals.includes(intv.id)
             return (
               <button
                 key={intv.id}
-                onClick={() => toggleInterval(intv.id)}
-                className={`text-xs sm:text-sm px-3.5 py-1.5 rounded-xl border font-semibold transition-all duration-150 cursor-pointer ${
+                onClick={() => supported && toggleInterval(intv.id)}
+                disabled={!supported}
+                title={supported ? undefined : `${ex.name} does not offer ${intv.label} candles`}
+                className={`${!supported ? "opacity-30 line-through cursor-not-allowed " : ""}text-xs sm:text-sm px-3.5 py-1.5 rounded-xl border font-semibold transition-all duration-150 cursor-pointer ${
                   isSelected
                     ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900 dark:border-white shadow-xs scale-105"
                     : "bg-zinc-100/90 dark:bg-zinc-900/60 border-zinc-300/80 dark:border-zinc-800/80 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200/90 dark:hover:bg-zinc-800/70"

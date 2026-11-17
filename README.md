@@ -1,18 +1,32 @@
 # cryptofetch
 
-> Fast, free, and self-hostable historical cryptocurrency OHLCV candlestick data downloader powered by Binance Public API. Available as an interactive Python CLI and a 100% serverless web application.
+> Fast, free, and self-hostable historical cryptocurrency OHLCV candlestick data downloader. Pick your source: Binance, OKX, Coinbase, Bitget or Gate public APIs. Available as an interactive Python CLI and a 100% serverless web application.
 
 ---
 
 ## Overview
 
-**cryptofetch** lets you download high-resolution OHLCV (Open, High, Low, Close, Volume) candlestick historical price data directly from Binance Vision Public API with:
+**cryptofetch** lets you download high-resolution OHLCV (Open, High, Low, Close, Volume) candlestick historical price data directly from public exchange APIs with:
+- **5 exchanges**: Binance (default), OKX, Coinbase, Bitget, Gate
 - **No API keys required**
-- **No rate limit restrictions**
+- **Light on the exchanges**: requests are paced to stay within each exchange's public rate limits (the web app calls them straight from your browser, so limits apply to your own IP)
 - **Completely free & open source**
-- **15 timeframes** (`1m` to `1M`)
-- **All 500+ USDT trading pairs**
-- **Instant CSV & ZIP exports** formatted for quantitative backtesting
+- **Up to 15 timeframes** (`1m` to `1M`, depending on the exchange)
+- **Hundreds of trading pairs** per exchange
+- **One CSV format** for every exchange, formatted for quantitative backtesting
+- **Instant CSV & ZIP exports**
+
+### Exchanges
+
+| Exchange | Symbol style | Intervals | Notes |
+|----------|--------------|-----------|-------|
+| Binance (default) | `BTCUSDT` | all 15 | Binance Vision public API |
+| OKX | `BTC-USDT` | all except `8h` | UTC-aligned daily/weekly/monthly candles |
+| Coinbase | `BTC-USD` | `1m` `5m` `15m` `1h` `6h` `1d` | Mostly USD pairs; 300 candles per request |
+| Bitget | `BTCUSDT` | all except `2h` `8h` | UTC-aligned daily/weekly/monthly candles |
+| Gate | `BTC_USDT` | `1m` `5m` `15m` `30m` `1h` `4h` `8h` `1d` `1w` | Only the latest 10,000 candles per interval |
+
+You can type just the coin (`BTC`) or any style (`BTCUSDT`, `BTC-USDT`, `btc_usdt`); cryptofetch converts it for the selected exchange. Prices and volumes differ slightly between exchanges because each reports its own market. Columns an exchange does not provide (for example trade counts) are left empty.
 
 ---
 
@@ -21,7 +35,8 @@
 > **Live Web App**: [cryptofetch.vercel.app](https://cryptofetch.vercel.app)
 
 A modern, high-performance web interface designed for fast and intuitive historical cryptocurrency data extraction.
-- **100% Serverless**: Client-side direct streaming from Binance Vision API straight to browser memory.
+- **100% Serverless**: Client-side direct streaming from the exchange's public API straight to browser memory.
+- **Exchange picker**: Switch between Binance, OKX, Coinbase, Bitget and Gate; unsupported intervals are greyed out for the chosen exchange.
 - **Single & Multi-Crypto Modes**: Download a single asset or batch-fetch multiple coins at once.
 - **ZIP Bundling**: When downloading multiple intervals or pairs, assets are automatically packed into a clean `.zip` archive via JSZip.
 - **Dynamic Theming**: Obsidian dark & crisp white light modes with smooth view-transitions.
@@ -64,11 +79,15 @@ pip install requests tqdm
 
 ```bash
 python cryptofetch.py
+
+# or pick the exchange up front: binance, okx, coinbase, bitget, gate
+python cryptofetch.py --exchange okx
 ```
 
 Follow the interactive prompts:
-1. Enter cryptocurrency symbol (e.g. `BTCUSDT`, `ETHUSDT`, `SOLUSDT`)
-2. Select intervals (e.g. `1,4,6` for 1m, 15m, 1h or `all`)
+0. Select the exchange (Enter for Binance)
+1. Enter cryptocurrency symbol (e.g. `BTCUSDT`, `ETHUSDT`, `SOLUSDT`, or just `BTC`)
+2. Select intervals (e.g. `1,4,6` for 1m, 15m, 1h or `all`; the list shows what the exchange supports)
 3. Enter start date (`YYYY-MM-DD`)
 4. Enter end date (`YYYY-MM-DD`)
 5. Specify output directory (defaults to `<symbol>/`)
@@ -155,7 +174,7 @@ SOLUSDT 1m |████████████████████| 100.0%
 
 ## Supported Cryptocurrencies
 
-Supports **all USDT trading pairs** available on Binance, including:
+Supports the spot trading pairs of every supported exchange (USDT pairs on Binance, OKX, Bitget and Gate, mostly USD pairs on Coinbase), including:
 - Bitcoin (`BTCUSDT`)
 - Ethereum (`ETHUSDT`)
 - Solana (`SOLUSDT`)
@@ -163,7 +182,7 @@ Supports **all USDT trading pairs** available on Binance, including:
 - XRP (`XRPUSDT`)
 - Cardano (`ADAUSDT`)
 - Dogecoin (`DOGEUSDT`)
-- And 500+ more...
+- And hundreds more...
 
 ---
 
@@ -196,7 +215,7 @@ Each CSV dataset contains standard OHLCV backtest headers:
 
 ## Data Source
 
-Directly sourced from the [Binance Vision Spot API](https://developers.binance.com/docs/binance-spot-api-docs).
+Directly sourced from the public market data APIs of Binance ([Binance Vision](https://developers.binance.com/docs/binance-spot-api-docs)), OKX, Coinbase Exchange, Bitget and Gate. No account or key is needed. Each exchange has its own terms of use for its API, so please check them before redistributing the data. Files from exchanges other than Binance are named with the exchange as a prefix (for example `okx_btc-usdt_1h_...csv`).
 
 ---
 
@@ -225,5 +244,5 @@ For pre-compiled historical Bitcoin datasets, see:
 
 ## License
 
-This dataset is provided as-is under the MIT License. The data is sourced from Binance's public API.
+This dataset is provided as-is under the MIT License. The data is sourced from the public APIs of the exchanges listed above.
 

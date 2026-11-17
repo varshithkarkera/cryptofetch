@@ -16,7 +16,7 @@ const leagueSpartan = League_Spartan({
 
 export const metadata = {
   title: 'cryptofetch | Historical Cryptocurrency OHLCV Downloader',
-  description: 'Fast, free, and self-hostable historical cryptocurrency data downloader powered by Binance Public API.',
+  description: 'Fast, free, and self-hostable historical cryptocurrency data downloader from the public APIs of Binance, OKX, Coinbase, Bitget and Gate.',
 }
 
 export default function RootLayout({

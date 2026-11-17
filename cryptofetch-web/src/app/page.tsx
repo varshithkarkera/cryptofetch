@@ -37,7 +37,7 @@ export default function HomePage() {
             <div className="lg:col-span-5 space-y-6 text-left">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100/90 dark:bg-zinc-900/80 border border-zinc-200/80 dark:border-zinc-800/80 text-xs font-semibold text-zinc-800 dark:text-zinc-200 backdrop-blur-md shadow-2xs">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Direct Binance Public Stream</span>
+                <span>Direct Public Exchange Streams</span>
               </div>
 
               <div className="space-y-2">
@@ -50,21 +50,21 @@ export default function HomePage() {
               </div>
 
               <p className="text-lg text-zinc-700 dark:text-zinc-200 leading-relaxed max-w-lg">
-                Export high-resolution OHLCV candlestick data directly to clean CSVs. No API keys required, no rate limit restrictions, and completely free.
+                Export high-resolution OHLCV candlestick data directly to clean CSVs. No API keys, no sign-up, and completely free. Pick Binance, OKX, Coinbase, Bitget or Gate.
               </p>
 
               {/* Key feature highlights */}
               <div className="grid grid-cols-3 gap-3 pt-2">
                 <div className="p-3.5 rounded-2xl bg-zinc-100/90 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-md space-y-1">
                   <Zap className="w-4 h-4 text-amber-500" />
-                  <div className="text-xs font-bold text-zinc-900 dark:text-white">15 Intervals</div>
+                  <div className="text-xs font-bold text-zinc-900 dark:text-white">Up to 15 Intervals</div>
                   <div className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">1m to 1M bars</div>
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-zinc-100/90 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-md space-y-1">
                   <Database className="w-4 h-4 text-blue-500" />
-                  <div className="text-xs font-bold text-zinc-900 dark:text-white">500+ Pairs</div>
-                  <div className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">All USDT assets</div>
+                  <div className="text-xs font-bold text-zinc-900 dark:text-white">5 Exchanges</div>
+                  <div className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">Hundreds of pairs</div>
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-zinc-100/90 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-md space-y-1">
@@ -88,7 +88,7 @@ export default function HomePage() {
           <div className="max-w-[84rem] mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-500 dark:text-zinc-400">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-medium text-zinc-700 dark:text-zinc-300">Binance Vision API v3</span>
+              <span className="font-medium text-zinc-700 dark:text-zinc-300">Binance · OKX · Coinbase · Bitget · Gate public APIs</span>
               <span className="text-zinc-400 dark:text-zinc-600">·</span>
               <span>100% Free & Open Source</span>
             </div>
