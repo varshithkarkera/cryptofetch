@@ -1,17 +1,24 @@
 import './globals.css'
-import { Inter, League_Spartan } from 'next/font/google'
+import { Inter, Instrument_Serif, Geist_Mono } from 'next/font/google'
 import { ThemeProvider } from '@/context/ThemeContext'
 
 const inter = Inter({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+  weight: ['400', '500', '600'],
   variable: '--font-inter',
 })
 
-const leagueSpartan = League_Spartan({
+const instrumentSerif = Instrument_Serif({
   subsets: ['latin'],
-  weight: ['700', '800', '900'],
-  variable: '--font-spartan',
+  weight: ['400'],
+  style: ['normal', 'italic'],
+  variable: '--font-serif',
+})
+
+const geistMono = Geist_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-mono',
 })
 
 export const metadata = {
@@ -29,7 +36,7 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://data-api.binance.vision" />
       </head>
-      <body className={`${inter.className} ${leagueSpartan.variable} min-h-screen bg-white dark:bg-[#0b0b0b] text-black dark:text-white transition-colors duration-300`}>
+      <body className={`${inter.className} ${inter.variable} ${instrumentSerif.variable} ${geistMono.variable} min-h-screen`}>
         <script
           dangerouslySetInnerHTML={{
             __html: `
