@@ -2,14 +2,103 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* varshith.me design tokens */
+:root {
+  --bg: #ffffff;
+  --line: #e5e5e5;
+  --band: rgba(0, 0, 0, 0.02);
+  --text: #0a0a0a;
+  --muted: #525252;
+  --faint: #a3a3a3;
+  --chip: rgba(0, 0, 0, 0.02);
+  --line2: #d4d4d4;
+  --hover: rgba(0, 0, 0, 0.04);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dark {
+  --bg: #0f0e0e;
+  --line: #272727;
+  --band: rgba(255, 255, 255, 0.02);
+  --text: #ffffff;
+  --muted: #a3a3a3;
+  --faint: #737373;
+  --chip: rgba(255, 255, 255, 0.02);
+  --line2: #3a3a3a;
+  --hover: rgba(255, 255, 255, 0.04);
+}
+
 @layer base {
   body {
-    @apply antialiased selection:bg-zinc-200 dark:selection:bg-zinc-800;
+    @apply antialiased;
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.3s, color 0.3s;
+  }
+  ::selection {
+    background: var(--line2);
   }
 }
 
 html {
   scrollbar-gutter: stable;
+}
+
+/* Typography helpers */
+.serif {
+  font-family: var(--font-serif), "Instrument Serif", serif;
+  font-weight: 400;
+}
+.mono {
+  font-family: var(--font-mono), "Geist Mono", monospace;
+}
+
+/* Signature dashed-line structure */
+.wrap {
+  width: 100%;
+  max-width: 56rem;
+  margin: 0 auto;
+  border-left: 1px dashed var(--line);
+  border-right: 1px dashed var(--line);
+  position: relative;
+}
+
+/* full-viewport-width dividers */
+.rule,
+.band {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+}
+.rule {
+  height: 1px;
+  border-top: 1px dashed var(--line);
+}
+.band {
+  height: 20px;
+  border-top: 1px dashed var(--line);
+  border-bottom: 1px dashed var(--line);
+  background: var(--band);
+}
+
+/* Pulsing live dot */
+.pulse-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
 }
 
 /* Minimalist scrollbars */
@@ -21,11 +110,11 @@ html {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(161, 161, 170, 0.3);
+  background: var(--line2);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(161, 161, 170, 0.5);
+  background: var(--faint);
 }
 
 /* View Transition circular reveal for Theme Toggler */
