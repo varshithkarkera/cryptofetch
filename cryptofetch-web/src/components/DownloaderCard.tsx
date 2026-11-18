@@ -283,12 +283,13 @@ export default function DownloaderCard() {
   const activeCount = isMultiMode ? symbols.length : 1
   const activeDatasetCount = activeCount * selectedIntervals.length
 
+
   return (
-    <div className="w-full max-w-2xl rounded-2xl bg-white/90 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 backdrop-blur-md p-6 sm:p-7 shadow-sm space-y-5">
-      
+    <div className="w-full border border-dashed border-[var(--line)] rounded-xl bg-[var(--chip)] p-5 sm:p-7 space-y-6">
+
       {/* 0. Data source */}
-      <div className="space-y-2">
-        <label className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider block">Exchange</label>
+      <div className="space-y-2.5">
+        <label className="mono text-[11px] font-medium text-[var(--faint)] uppercase tracking-[.14em] block">Exchange</label>
         <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Exchange">
           {EXCHANGES.map((e) => (
             <button
@@ -297,23 +298,25 @@ export default function DownloaderCard() {
               aria-checked={e.id === exchangeId}
               disabled={downloading}
               onClick={() => switchExchange(e.id)}
-              className={`text-xs sm:text-sm px-3.5 py-1.5 rounded-xl border font-semibold transition-all duration-150 cursor-pointer ${
+              className={`text-xs sm:text-[13px] px-3.5 py-1.5 rounded-md border transition-all duration-150 cursor-pointer ${
                 e.id === exchangeId
-                  ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900 dark:border-white shadow-xs"
-                  : "bg-zinc-100/90 dark:bg-zinc-900/60 border-zinc-300/80 dark:border-zinc-800/80 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200/90 dark:hover:bg-zinc-800/70"
+                  ? "bg-[var(--text)] text-[var(--bg)] border-solid border-[var(--text)] font-semibold"
+                  : "border-dashed border-[var(--line2)] bg-transparent text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)]"
               }`}
             >
               {e.name}
             </button>
           ))}
         </div>
-        {ex.note && <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">{ex.note}</p>}
+        {ex.note && <p className="mono text-[11px] text-[var(--faint)]">{ex.note}</p>}
       </div>
+
+      <div className="border-t border-dashed border-[var(--line)]" />
 
       {/* 1. Header with Mode Switch */}
       <div className="space-y-2.5">
-        <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider block">
+        <div className="flex items-center justify-between gap-2">
+          <label className="mono text-[11px] font-medium text-[var(--faint)] uppercase tracking-[.14em] block">
             {isMultiMode ? `Selected Cryptos (${symbols.length})` : "Cryptocurrency Symbol"}
           </label>
 
@@ -321,13 +324,13 @@ export default function DownloaderCard() {
           <button
             type="button"
             onClick={() => setIsMultiMode(!isMultiMode)}
-            className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 mono text-[11px] px-2.5 py-1 rounded-md border transition-all cursor-pointer ${
               isMultiMode
-                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-transparent shadow-xs"
-                : "bg-zinc-100/90 dark:bg-zinc-800/80 border-zinc-300/80 dark:border-zinc-700/80 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                ? "bg-[var(--text)] text-[var(--bg)] border-solid border-[var(--text)] font-semibold"
+                : "border-dashed border-[var(--line2)] text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)]"
             }`}
           >
-            <Layers className="w-3 h-3 text-emerald-500" />
+            <Layers className="w-3 h-3" />
             <span>{isMultiMode ? "Single Mode" : "Download Multiple"}</span>
           </button>
         </div>
@@ -341,19 +344,19 @@ export default function DownloaderCard() {
                 value={singleSymbol}
                 onChange={(e) => setSingleSymbol(e.target.value.toUpperCase())}
                 placeholder={`e.g. ${symbolOf("BTC")}, ${symbolOf("SOL")}, ${symbolOf("ETH")}`}
-                className="w-full px-4 py-2.5 rounded-xl bg-zinc-50/80 dark:bg-zinc-950/80 border border-zinc-300 dark:border-zinc-800 text-black dark:text-white font-bold text-sm focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-600 transition-all uppercase placeholder:normal-case placeholder:text-zinc-400"
+                className="mono w-full px-4 py-2.5 rounded-lg bg-[var(--bg)] border border-[var(--line2)] text-[var(--text)] font-semibold text-sm focus:outline-none focus:border-[var(--faint)] transition-all uppercase placeholder:normal-case placeholder:text-[var(--faint)] placeholder:font-normal"
               />
-              
+
               <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                {singleVerifying && <Loader2 className="w-4 h-4 text-zinc-500 animate-spin" />}
+                {singleVerifying && <Loader2 className="w-4 h-4 text-[var(--faint)] animate-spin" />}
                 {!singleVerifying && singleVerified?.valid && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-semibold border border-emerald-500/30">
+                  <span className="mono inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] text-emerald-600 dark:text-emerald-400 text-[11px] font-medium border border-dashed border-emerald-500/40">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     Verified
                   </span>
                 )}
                 {!singleVerifying && singleVerified && !singleVerified.valid && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 text-red-700 dark:text-red-400 text-xs font-semibold border border-red-500/30">
+                  <span className="mono inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] text-red-600 dark:text-red-400 text-[11px] font-medium border border-dashed border-red-500/40">
                     <AlertCircle className="w-3.5 h-3.5" />
                     Invalid Pair
                   </span>
@@ -363,30 +366,30 @@ export default function DownloaderCard() {
 
             {/* Live price tag */}
             {singleVerified?.valid && (
-              <div className="flex items-center gap-3 text-xs text-zinc-700 dark:text-zinc-300 pt-1.5">
-                <span className="flex items-center gap-1">
-                  <span className="text-zinc-500 dark:text-zinc-400">Price:</span>
-                  <span className="font-bold text-black dark:text-white">
+              <div className="mono flex items-center gap-3 text-xs text-[var(--muted)] pt-2">
+                <span className="flex items-center gap-1.5">
+                  <span className="text-[var(--faint)]">Price:</span>
+                  <span className="font-semibold text-[var(--text)]">
                     ${singleVerified.price}
                   </span>
                 </span>
-                <span className={`font-bold ${Number(singleVerified.change) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                <span className={`font-semibold ${Number(singleVerified.change) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
                   {Number(singleVerified.change) >= 0 ? "+" : ""}{singleVerified.change}% (24h)
                 </span>
               </div>
             )}
 
             {/* Quick popular coins */}
-            <div className="flex flex-wrap items-center gap-1.5 pt-1.5">
-              <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 mr-1">Popular:</span>
+            <div className="flex flex-wrap items-center gap-1.5 pt-2.5">
+              <span className="mono text-[11px] text-[var(--faint)] mr-1">Popular:</span>
               {POPULAR_COINS.map((coin) => (
                 <button
                   key={coin}
                   onClick={() => setSingleSymbol(symbolOf(coin))}
-                  className={`text-xs px-2.5 py-1 rounded-lg border transition-colors cursor-pointer ${
+                  className={`mono text-[11px] px-2.5 py-1 rounded-md border transition-colors cursor-pointer ${
                     isDefaultCoin(singleSymbol, coin)
-                      ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-transparent font-bold shadow-xs"
-                      : "bg-zinc-100/90 dark:bg-zinc-800/60 border-zinc-300/80 dark:border-zinc-700/80 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 font-medium"
+                      ? "bg-[var(--text)] text-[var(--bg)] border-solid border-[var(--text)] font-semibold"
+                      : "border-dotted border-[var(--line2)] bg-[var(--chip)] text-[var(--muted)] hover:text-[var(--text)] hover:border-[var(--faint)]"
                   }`}
                 >
                   {coin}
@@ -397,18 +400,18 @@ export default function DownloaderCard() {
         ) : (
           /* Mode B: Multi-Symbol Tag System (Activated when "Download Multiple" is clicked) */
           <div className="space-y-2">
-            <div className="flex flex-wrap gap-2 items-center min-h-10 p-2 rounded-xl bg-zinc-50 dark:bg-zinc-950/80 border border-zinc-200 dark:border-zinc-800">
+            <div className="flex flex-wrap gap-2 items-center min-h-10 p-2 rounded-lg bg-[var(--bg)] border border-[var(--line2)]">
               {symbols.map((sym) => {
                 return (
                   <span
                     key={sym}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 text-xs font-semibold shadow-xs"
+                    className="mono inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--text)] text-[var(--bg)] text-[11px] font-semibold"
                   >
                     <span>{sym}</span>
                     {symbols.length > 1 && (
                       <button
                         onClick={() => removeMultiSymbol(sym)}
-                        className="p-0.5 hover:bg-zinc-700 dark:hover:bg-zinc-200 rounded-full transition-colors cursor-pointer ml-0.5"
+                        className="p-0.5 hover:opacity-70 rounded-full transition-opacity cursor-pointer ml-0.5"
                         title={`Remove ${sym}`}
                       >
                         <X className="w-3 h-3" />
@@ -430,7 +433,7 @@ export default function DownloaderCard() {
                     }
                   }}
                   placeholder="+ Add coin (SOL, ADA...)"
-                  className="w-full bg-transparent px-2 py-1 text-xs font-medium text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none uppercase"
+                  className="mono w-full bg-transparent px-2 py-1 text-xs font-medium text-[var(--text)] placeholder:text-[var(--faint)] focus:outline-none uppercase"
                 />
                 {inputVal && (
                   <button
@@ -446,7 +449,7 @@ export default function DownloaderCard() {
 
             {/* Quick Add Pills */}
             <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-              <span className="text-xs text-zinc-400 mr-1">Quick Add:</span>
+              <span className="mono text-[11px] text-[var(--faint)] mr-1">Quick Add:</span>
               {POPULAR_COINS.map((coin) => {
                 const isAdded = symbols.some((sx) => isDefaultCoin(sx, coin))
                 return (
@@ -456,10 +459,10 @@ export default function DownloaderCard() {
                       if (isAdded) removeMultiSymbol(symbols.find((sx) => isDefaultCoin(sx, coin))!)
                       else addMultiSymbol(coin)
                     }}
-                    className={`text-xs px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
+                    className={`mono text-[11px] px-2.5 py-1 rounded-md border transition-all cursor-pointer ${
                       isAdded
-                        ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-transparent font-semibold shadow-xs"
-                        : "bg-zinc-100/80 dark:bg-zinc-800/60 border-zinc-200/80 dark:border-zinc-700/80 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                        ? "bg-[var(--text)] text-[var(--bg)] border-solid border-[var(--text)] font-semibold"
+                        : "border-dotted border-[var(--line2)] bg-[var(--chip)] text-[var(--muted)] hover:text-[var(--text)] hover:border-[var(--faint)]"
                     }`}
                   >
                     {coin}
@@ -471,17 +474,17 @@ export default function DownloaderCard() {
         )}
       </div>
 
-      <hr className="border-zinc-200/80 dark:border-zinc-800/80 my-1" />
+      <div className="border-t border-dashed border-[var(--line)]" />
 
       {/* 2. Candle Intervals Selection */}
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider block">
+          <label className="mono text-[11px] font-medium text-[var(--faint)] uppercase tracking-[.14em] block">
             Candle Intervals ({selectedIntervals.length} selected)
           </label>
           <button
             onClick={selectAllIntervals}
-            className="text-xs text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer font-medium"
+            className="mono text-[11px] text-[var(--faint)] hover:text-[var(--text)] transition-colors cursor-pointer"
           >
             {selectedIntervals.length === ex.intervals.length ? "Reset to 1h" : "Select All"}
           </button>
@@ -497,10 +500,10 @@ export default function DownloaderCard() {
                 onClick={() => supported && toggleInterval(intv.id)}
                 disabled={!supported}
                 title={supported ? undefined : `${ex.name} does not offer ${intv.label} candles`}
-                className={`${!supported ? "opacity-30 line-through cursor-not-allowed " : ""}text-xs sm:text-sm px-3.5 py-1.5 rounded-xl border font-semibold transition-all duration-150 cursor-pointer ${
+                className={`${!supported ? "opacity-30 line-through cursor-not-allowed " : ""}mono text-[11px] sm:text-xs px-3 py-1.5 rounded-md border transition-all duration-150 cursor-pointer ${
                   isSelected
-                    ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900 dark:border-white shadow-xs scale-105"
-                    : "bg-zinc-100/90 dark:bg-zinc-900/60 border-zinc-300/80 dark:border-zinc-800/80 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200/90 dark:hover:bg-zinc-800/70"
+                    ? "bg-[var(--text)] text-[var(--bg)] border-solid border-[var(--text)] font-semibold"
+                    : "border-dashed border-[var(--line2)] bg-transparent text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)]"
                 }`}
               >
                 {intv.label}
@@ -510,41 +513,41 @@ export default function DownloaderCard() {
         </div>
       </div>
 
-      <hr className="border-zinc-200/80 dark:border-zinc-800/80 my-1" />
+      <div className="border-t border-dashed border-[var(--line)]" />
 
-      {/* 3. Date Range Selection with Enhanced Padding & Container */}
-      <div className="p-3.5 sm:p-4 rounded-xl bg-zinc-50/70 dark:bg-zinc-950/40 border border-zinc-200/80 dark:border-zinc-800/80 space-y-3">
-        <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider block">
+      {/* 3. Date Range Selection */}
+      <div className="p-4 rounded-lg border border-dashed border-[var(--line)] bg-[var(--chip)] space-y-3">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <label className="mono text-[11px] font-medium text-[var(--faint)] uppercase tracking-[.14em] block">
             Historical Date Range
           </label>
-          <div className="flex items-center gap-1 text-xs text-zinc-500 font-medium">
+          <div className="mono flex items-center gap-1 text-[11px] text-[var(--faint)]">
             <span className="hidden sm:inline mr-0.5">Presets:</span>
-            <button onClick={() => setPresetRange(7)} className="px-2 py-0.5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-300 cursor-pointer transition-colors">7D</button>
-            <button onClick={() => setPresetRange(30)} className="px-2 py-0.5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-300 cursor-pointer transition-colors">30D</button>
-            <button onClick={() => setPresetRange(180)} className="px-2 py-0.5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-300 cursor-pointer transition-colors">6M</button>
-            <button onClick={() => setPresetRange(365)} className="px-2 py-0.5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-300 cursor-pointer transition-colors">1Y</button>
-            <button onClick={() => setPresetRange(365 * 3)} className="px-2 py-0.5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-300 cursor-pointer transition-colors">3Y</button>
+            <button onClick={() => setPresetRange(7)} className="px-2 py-0.5 rounded hover:bg-[var(--hover)] hover:text-[var(--text)] cursor-pointer transition-colors">7D</button>
+            <button onClick={() => setPresetRange(30)} className="px-2 py-0.5 rounded hover:bg-[var(--hover)] hover:text-[var(--text)] cursor-pointer transition-colors">30D</button>
+            <button onClick={() => setPresetRange(180)} className="px-2 py-0.5 rounded hover:bg-[var(--hover)] hover:text-[var(--text)] cursor-pointer transition-colors">6M</button>
+            <button onClick={() => setPresetRange(365)} className="px-2 py-0.5 rounded hover:bg-[var(--hover)] hover:text-[var(--text)] cursor-pointer transition-colors">1Y</button>
+            <button onClick={() => setPresetRange(365 * 3)} className="px-2 py-0.5 rounded hover:bg-[var(--hover)] hover:text-[var(--text)] cursor-pointer transition-colors">3Y</button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1">
-            <span className="text-[11px] text-zinc-700 dark:text-zinc-300 font-semibold">Start Date</span>
+            <span className="mono text-[11px] text-[var(--muted)]">Start Date</span>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-black dark:text-white font-medium text-xs focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-600 shadow-2xs"
+              className="mono w-full px-3.5 py-2 rounded-lg bg-[var(--bg)] border border-[var(--line2)] text-[var(--text)] text-xs focus:outline-none focus:border-[var(--faint)] [color-scheme:light] dark:[color-scheme:dark]"
             />
           </div>
           <div className="space-y-1">
-            <span className="text-[11px] text-zinc-700 dark:text-zinc-300 font-semibold">End Date</span>
+            <span className="mono text-[11px] text-[var(--muted)]">End Date</span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-black dark:text-white font-medium text-xs focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-600 shadow-2xs"
+              className="mono w-full px-3.5 py-2 rounded-lg bg-[var(--bg)] border border-[var(--line2)] text-[var(--text)] text-xs focus:outline-none focus:border-[var(--faint)] [color-scheme:light] dark:[color-scheme:dark]"
             />
           </div>
         </div>
@@ -552,15 +555,15 @@ export default function DownloaderCard() {
 
       {/* Progress feedback bar */}
       {downloading && (
-        <div className="space-y-1.5 p-3 rounded-xl bg-zinc-100/90 dark:bg-zinc-950/80 border border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center justify-between text-xs font-medium">
-            <span className="flex items-center gap-2 text-zinc-700 dark:text-zinc-300">
+        <div className="space-y-1.5 p-3 rounded-lg bg-[var(--chip)] border border-dashed border-[var(--line)]">
+          <div className="mono flex items-center justify-between text-xs">
+            <span className="flex items-center gap-2 text-[var(--muted)]">
               <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-500" />
               {statusMessage || "Preparing data stream..."}
             </span>
-            <span className="text-zinc-500 dark:text-zinc-400">{downloadProgress}%</span>
+            <span className="text-[var(--faint)]">{downloadProgress}%</span>
           </div>
-          <div className="w-full h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
+          <div className="w-full h-1 rounded-full bg-[var(--line)] overflow-hidden">
             <div
               className="h-full bg-emerald-500 rounded-full transition-all duration-300 ease-out"
               style={{ width: `${downloadProgress}%` }}
@@ -573,7 +576,7 @@ export default function DownloaderCard() {
       <button
         onClick={handleDownload}
         disabled={downloading || (!isMultiMode && !singleVerified?.valid) || (isMultiMode && symbols.length === 0)}
-        className="w-full py-3.5 px-6 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-semibold text-xs sm:text-sm hover:opacity-95 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+        className="w-full py-3.5 px-6 rounded-full bg-[var(--text)] text-[var(--bg)] font-semibold text-xs sm:text-sm hover:opacity-90 hover:-translate-y-px active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-2 cursor-pointer"
       >
         {downloading ? (
           <>
@@ -591,7 +594,7 @@ export default function DownloaderCard() {
       </button>
 
       {/* Output format badge */}
-      <div className="flex items-center justify-center gap-2 text-[11px] text-zinc-500 dark:text-zinc-400">
+      <div className="mono flex items-center justify-center gap-2 text-[11px] text-[var(--faint)]">
         {activeDatasetCount > 1 ? (
           <>
             <FileArchive className="w-3.5 h-3.5 text-emerald-500" />
