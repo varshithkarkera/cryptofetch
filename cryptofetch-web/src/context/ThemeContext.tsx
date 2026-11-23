@@ -1,89 +1,60 @@
 "use client"
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react'
 
 type Theme = 'dark' | 'light'
-
-interface ThemeContextType {
-  theme: Theme
-  setTheme: (theme: Theme) => void
-  toggleTheme: () => void
-}
-
+interface ThemeContextType { theme: Theme; setTheme: (theme: Theme) => void; toggleTheme: () => void }
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
+const portfolioOrigins = ['https://varshith.me', 'https://www.varshith.me']
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('dark')
-
+  const inherited = useRef(false)
+  const renderTheme = (next: Theme) => {
+    document.documentElement.classList.toggle('dark', next === 'dark')
+    document.documentElement.style.colorScheme = next
+    setThemeState(next)
+  }
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as Theme | null
-    if (savedTheme) {
-      setThemeState(savedTheme)
-      if (savedTheme === 'dark') {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
+    let parentOrigin = ''
+    try { parentOrigin = new URL(document.referrer).origin } catch {}
+    const embedded = window.parent !== window && portfolioOrigins.includes(parentOrigin)
+    const requested = embedded ? new URLSearchParams(location.search).get('portfolioTheme') : null
+    const saved = localStorage.getItem('theme')
+    const system = window.matchMedia('(prefers-color-scheme: dark)')
+    if (requested === 'light' || requested === 'dark') {
+      inherited.current = true
+      renderTheme(requested)
     } else {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      const initialTheme: Theme = prefersDark ? 'dark' : 'light'
-      setThemeState(initialTheme)
-      if (initialTheme === 'dark') {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
+      renderTheme(saved === 'light' || saved === 'dark' ? saved : system.matches ? 'dark' : 'light')
     }
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const handleSystemThemeChange = (e: MediaQueryListEvent) => {
-      const stored = localStorage.getItem('theme')
-      if (!stored) {
-        const nextTheme: Theme = e.matches ? 'dark' : 'light'
-        setThemeState(nextTheme)
-        if (nextTheme === 'dark') {
-          document.documentElement.classList.add('dark')
-        } else {
-          document.documentElement.classList.remove('dark')
-        }
-      }
+    const receive = (event: MessageEvent) => {
+      if (!embedded || event.source !== window.parent || event.origin !== parentOrigin) return
+      if (event.data?.type !== 'portfolio:theme' || !['light', 'dark'].includes(event.data.theme)) return
+      inherited.current = true
+      renderTheme(event.data.theme)
     }
-
-    mediaQuery.addEventListener('change', handleSystemThemeChange)
-    return () => mediaQuery.removeEventListener('change', handleSystemThemeChange)
+    const systemChanged = (event: MediaQueryListEvent) => {
+      if (!inherited.current && !localStorage.getItem('theme')) renderTheme(event.matches ? 'dark' : 'light')
+    }
+    window.addEventListener('message', receive)
+    system.addEventListener('change', systemChanged)
+    if (embedded) window.parent.postMessage({ type: 'portfolio:theme-ready' }, parentOrigin)
+    return () => {
+      window.removeEventListener('message', receive)
+      system.removeEventListener('change', systemChanged)
+    }
   }, [])
-
-  const applyTheme = (newTheme: Theme) => {
-    localStorage.setItem('theme', newTheme)
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-    setThemeState(newTheme)
+  const setTheme = (next: Theme) => {
+    // Embedded changes are temporary. Keep the standalone preference intact.
+    if (!inherited.current) localStorage.setItem('theme', next)
+    renderTheme(next)
   }
-
-  const toggleTheme = () => {
-    const next = theme === 'dark' ? 'light' : 'dark'
-    applyTheme(next)
-  }
-
-  const setTheme = (newTheme: Theme) => {
-    applyTheme(newTheme)
-  }
-
-  return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  )
+  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark')
+  return <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>{children}</ThemeContext.Provider>
 }
-
 export function useTheme() {
   const context = useContext(ThemeContext)
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider')
-  }
+  if (context === undefined) throw new Error('useTheme must be used within a ThemeProvider')
   return context
 }
-
