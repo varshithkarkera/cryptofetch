@@ -43,6 +43,12 @@ export default function RootLayout({
               (function() {
                 try {
                   var localTheme = localStorage.getItem('theme');
+                  var parentOrigin = '';
+                  try { parentOrigin = new URL(document.referrer).origin; } catch (_) {}
+                  if (window.parent !== window && ['https://varshith.me', 'https://www.varshith.me'].includes(parentOrigin)) {
+                    var inherited = new URLSearchParams(location.search).get('portfolioTheme');
+                    if (inherited === 'light' || inherited === 'dark') localTheme = inherited;
+                  }
                   var supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
                   if (localTheme === 'dark' || (!localTheme && supportDarkMode)) {
                     document.documentElement.classList.add('dark');
