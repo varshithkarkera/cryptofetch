@@ -63,7 +63,8 @@ export default function RootLayout({
         <ThemeProvider>
           {children}
         </ThemeProvider>
-      </body>
+      <script src="https://varshith.me/click.js" defer></script>
+</body>
     </html>
   )
 }
